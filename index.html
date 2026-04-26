@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Expense Guardian</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #07090e;
+      --surface: #0f1117;
+      --surface-2: #161a23;
+      --border: rgba(255,255,255,0.07);
+      --border-hover: rgba(255,255,255,0.13);
+      --accent: #00e5a0;
+      --accent-dim: rgba(0,229,160,0.10);
+      --accent-border: rgba(0,229,160,0.22);
+      --warn: #f5a623;
+      --danger: #ff5757;
+      --text-1: #eef0f4;
+      --text-2: #7e8494;
+      --text-3: #444954;
+      --font-h: 'Syne', sans-serif;
+      --font-b: 'DM Sans', sans-serif;
+      --r: 14px;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text-1);
+      font-family: var(--font-b);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(0,229,160,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,229,160,0.025) 1px, transparent 1px);
+      background-size: 52px 52px;
+      pointer-events: none; z-index: 0;
+    }
+
+    /* NAV */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2.5rem; height: 62px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(7,9,14,0.82);
+      backdrop-filter: blur(18px);
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 10px;
+      font-family: var(--font-h); font-size: 1rem; font-weight: 700;
+      color: var(--text-1); text-decoration: none; letter-spacing: -0.01em;
+    }
+    .logo-box {
+      width: 30px; height: 30px; background: var(--accent); border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .logo-box svg { width: 16px; height: 16px; }
+    .nav-right { display: flex; align-items: center; gap: 1.5rem; }
+    .nav-right a {
+      color: var(--text-2); text-decoration: none; font-size: 0.875rem;
+      transition: color .2s;
+    }
+    .nav-right a:hover { color: var(--text-1); }
+    .btn-nav {
+      background: var(--accent); color: #000 !important; font-weight: 600 !important;
+      padding: 7px 16px; border-radius: 8px; font-size: 0.875rem !important;
+      transition: opacity .2s !important;
+    }
+    .btn-nav:hover { opacity: 0.82; }
+
+    /* HERO */
+    .hero {
+      position: relative; z-index: 1;
+      max-width: 780px; margin: 0 auto;
+      padding: 6.5rem 2rem 4.5rem; text-align: center;
+    }
+    .badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--accent-dim); border: 1px solid var(--accent-border);
+      border-radius: 99px; padding: 5px 14px;
+      font-size: 0.72rem; font-weight: 500; color: var(--accent);
+      letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 1.8rem;
+    }
+    .badge-dot {
+      width: 6px; height: 6px; background: var(--accent);
+      border-radius: 50%; animation: blink 2s ease-in-out infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.25} }
+    .hero h1 {
+      font-family: var(--font-h);
+      font-size: clamp(2.6rem, 5.5vw, 4.2rem);
+      font-weight: 800; line-height: 1.07; letter-spacing: -0.04em;
+      margin-bottom: 1.4rem;
+    }
+    .hero h1 em { color: var(--accent); font-style: normal; }
+    .hero p {
+      font-size: 1.05rem; color: var(--text-2); line-height: 1.72;
+      max-width: 520px; margin: 0 auto 2.8rem;
+    }
+    .hero-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .btn-primary {
+      background: var(--accent); color: #000;
+      font-family: var(--font-b); font-size: 0.9rem; font-weight: 600;
+      padding: 12px 28px; border-radius: 10px; border: none;
+      cursor: pointer; text-decoration: none; transition: opacity .2s;
+    }
+    .btn-primary:hover { opacity: 0.82; }
+    .btn-ghost {
+      background: transparent; color: var(--text-1);
+      font-family: var(--font-b); font-size: 0.9rem; font-weight: 400;
+      padding: 12px 28px; border-radius: 10px;
+      border: 1px solid var(--border-hover);
+      cursor: pointer; text-decoration: none; transition: border-color .2s, background .2s;
+    }
+    .btn-ghost:hover { background: var(--surface-2); border-color: var(--border-hover); }
+
+    /* STAT BAR */
+    .stat-bar {
+      position: relative; z-index: 1;
+      display: flex; justify-content: center; gap: 0;
+      max-width: 720px; margin: 0 auto 5rem;
+      border: 1px solid var(--border); border-radius: var(--r);
+      overflow: hidden;
+    }
+    .stat-item {
+      flex: 1; padding: 1.4rem 1.8rem; text-align: center;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+    }
+    .stat-item:last-child { border-right: none; }
+    .stat-val {
+      font-family: var(--font-h); font-size: 1.6rem; font-weight: 700;
+      color: var(--accent); letter-spacing: -0.03em;
+    }
+    .stat-lbl { font-size: 0.78rem; color: var(--text-2); margin-top: 4px; letter-spacing: 0.03em; }
+
+    /* MAIN CARD */
+    .main-wrap {
+      position: relative; z-index: 1;
+      max-width: 1060px; margin: 0 auto;
+      padding: 0 2rem 6rem;
+      display: grid; grid-template-columns: 1fr 380px; gap: 24px;
+    }
+    @media(max-width:860px) { .main-wrap { grid-template-columns: 1fr; } }
+
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r); overflow: hidden;
+    }
+    .card-header {
+      padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .card-icon {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: var(--accent-dim); border: 1px solid var(--accent-border);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .card-icon svg { width: 15px; height: 15px; stroke: var(--accent); }
+    .card-title { font-family: var(--font-h); font-size: 0.95rem; font-weight: 600; }
+    .card-body { padding: 1.5rem; }
+
+    /* FORM */
+    .form-group { margin-bottom: 1rem; }
+    .form-group label {
+      display: block; font-size: 0.78rem; font-weight: 500;
+      color: var(--text-2); letter-spacing: 0.04em; text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .form-group input {
+      width: 100%; background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 11px 14px;
+      color: var(--text-1); font-family: var(--font-b); font-size: 0.95rem;
+      outline: none; transition: border-color .2s, box-shadow .2s;
+    }
+    .form-group input::placeholder { color: var(--text-3); }
+    .form-group input:focus {
+      border-color: var(--accent-border);
+      box-shadow: 0 0 0 3px var(--accent-dim);
+    }
+    .btn-add {
+      width: 100%; background: var(--accent); color: #000;
+      font-family: var(--font-b); font-size: 0.95rem; font-weight: 600;
+      padding: 12px; border-radius: 10px; border: none; cursor: pointer;
+      margin-top: 0.5rem; transition: opacity .2s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-add:hover { opacity: 0.82; }
+    .btn-add svg { width: 16px; height: 16px; }
+
+    /* RESULT TOAST */
+    #res {
+      margin-top: 1rem; padding: 12px 14px; border-radius: 10px;
+      font-size: 0.88rem; display: none;
+      background: var(--surface-2); border: 1px solid var(--border);
+    }
+    #res.show { display: flex; align-items: center; gap: 10px; }
+    #res.normal { border-color: rgba(0,229,160,.25); background: var(--accent-dim); }
+    #res.warn { border-color: rgba(245,166,35,.3); background: rgba(245,166,35,0.08); color: var(--warn); }
+    .res-cat {
+      font-weight: 600; color: var(--accent); font-size: 0.82rem;
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .res-status { font-size: 0.82rem; color: var(--text-2); }
+
+    /* RECENT LIST */
+    .recent-list { list-style: none; }
+    .recent-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 11px 0; border-bottom: 1px solid var(--border);
+      font-size: 0.88rem;
+    }
+    .recent-item:last-child { border-bottom: none; }
+    .ri-left { display: flex; align-items: center; gap: 10px; }
+    .ri-dot {
+      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+      background: var(--accent);
+    }
+    .ri-desc { color: var(--text-1); }
+    .ri-cat { color: var(--text-2); font-size: 0.76rem; margin-top: 2px; }
+    .ri-amount { font-family: var(--font-h); font-weight: 600; color: var(--text-1); }
+
+    /* CHATBOT */
+    .chat-wrap { display: flex; flex-direction: column; }
+    #chat-box {
+      height: 260px; overflow-y: auto; padding: 1rem;
+      background: var(--surface-2); border-radius: 10px;
+      border: 1px solid var(--border); margin-bottom: 1rem;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    #chat-box::-webkit-scrollbar { width: 4px; }
+    #chat-box::-webkit-scrollbar-track { background: transparent; }
+    #chat-box::-webkit-scrollbar-thumb { background: var(--border-hover); border-radius: 4px; }
+    .msg { display: flex; gap: 8px; align-items: flex-start; }
+    .msg.user { flex-direction: row-reverse; }
+    .msg-bubble {
+      max-width: 78%; padding: 8px 12px; border-radius: 10px;
+      font-size: 0.85rem; line-height: 1.55;
+    }
+    .msg.user .msg-bubble {
+      background: var(--accent); color: #000; font-weight: 500;
+      border-bottom-right-radius: 3px;
+    }
+    .msg.bot .msg-bubble {
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--text-1); border-bottom-left-radius: 3px;
+    }
+    .msg-avatar {
+      width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem; font-weight: 700;
+    }
+    .msg.user .msg-avatar { background: var(--accent); color: #000; }
+    .msg.bot .msg-avatar { background: var(--surface-2); border: 1px solid var(--border); color: var(--text-2); }
+    .chat-input-row { display: flex; gap: 8px; }
+    #msg-input {
+      flex: 1; background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 10px 14px;
+      color: var(--text-1); font-family: var(--font-b); font-size: 0.88rem;
+      outline: none; transition: border-color .2s, box-shadow .2s;
+    }
+    #msg-input::placeholder { color: var(--text-3); }
+    #msg-input:focus { border-color: var(--accent-border); box-shadow: 0 0 0 3px var(--accent-dim); }
+    .btn-send {
+      background: var(--accent); color: #000; border: none;
+      width: 40px; height: 40px; border-radius: 10px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: opacity .2s; flex-shrink: 0;
+    }
+    .btn-send:hover { opacity: 0.82; }
+    .btn-send svg { width: 15px; height: 15px; }
+
+    .quick-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+    .chip {
+      font-size: 0.76rem; padding: 5px 10px; border-radius: 99px;
+      border: 1px solid var(--border); color: var(--text-2);
+      background: var(--surface-2); cursor: pointer; transition: all .2s;
+    }
+    .chip:hover { border-color: var(--accent-border); color: var(--accent); background: var(--accent-dim); }
+
+    /* FOOTER */
+    footer {
+      position: relative; z-index: 1;
+      text-align: center; padding: 2rem;
+      color: var(--text-3); font-size: 0.8rem;
+      border-top: 1px solid var(--border);
+    }
+
+    /* LOADING SPINNER */
+    .spinner {
+      width: 16px; height: 16px; border: 2px solid rgba(0,0,0,.2);
+      border-top-color: #000; border-radius: 50%;
+      animation: spin .6s linear infinite; display: none;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a class="nav-logo" href="/">
+      <div class="logo-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      Expense Guardian
+    </a>
+    <div class="nav-right">
+      <a href="/">Home</a>
+      <a href="/dashboard" class="btn-nav">Dashboard →</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="badge"><div class="badge-dot"></div>AI-Powered Finance</div>
+    <h1>Guard Your Money<br>with <em>Intelligence</em></h1>
+    <p>Track expenses automatically, detect anomalies in real time, and get AI-driven insights that help you spend smarter every day.</p>
+    <div class="hero-actions">
+      <a href="#add-section" class="btn-primary">Add Expense ↓</a>
+      <a href="/dashboard" class="btn-ghost">View Dashboard</a>
+    </div>
+  </section>
+
+  <!-- STAT BAR -->
+  <div class="stat-bar">
+    <div class="stat-item">
+      <div class="stat-val">AI</div>
+      <div class="stat-lbl">Smart Categorization</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-val">Live</div>
+      <div class="stat-lbl">Anomaly Detection</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-val">ML</div>
+      <div class="stat-lbl">Spend Prediction</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-val">Chat</div>
+      <div class="stat-lbl">AI Finance Bot</div>
+    </div>
+  </div>
+
+  <!-- MAIN PANEL -->
+  <div class="main-wrap" id="add-section">
+
+    <!-- LEFT COLUMN -->
+    <div style="display:flex;flex-direction:column;gap:20px;">
+
+      <!-- ADD EXPENSE -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
+            </svg>
+          </div>
+          <span class="card-title">Add Expense</span>
+        </div>
+        <div class="card-body">
+          <form id="exp-form" autocomplete="off">
+            <div class="form-group">
+              <label>Amount (₹)</label>
+              <input type="number" name="amount" placeholder="e.g. 450" required min="0" step="any"/>
+            </div>
+            <div class="form-group">
+              <label>Description</label>
+              <input type="text" name="description" placeholder="e.g. Lunch at restaurant" required/>
+            </div>
+            <button class="btn-add" type="submit">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                <path d="M12 5v14M5 12h14"/>
+              </svg>
+              <span id="btn-label">Add Expense</span>
+              <div class="spinner" id="spinner"></div>
+            </button>
+          </form>
+          <div id="res">
+            <div>
+              <div class="res-cat" id="res-cat"></div>
+              <div class="res-status" id="res-status"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHATBOT -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+            </svg>
+          </div>
+          <span class="card-title">AI Finance Assistant</span>
+        </div>
+        <div class="card-body chat-wrap">
+          <div class="quick-chips">
+            <span class="chip" onclick="quickAsk('What is my total spending?')">Total spend</span>
+            <span class="chip" onclick="quickAsk('What is my average spending?')">Average</span>
+            <span class="chip" onclick="quickAsk('What is my highest category?')">Top category</span>
+            <span class="chip" onclick="quickAsk('Am I overspending?')">Overspending?</span>
+            <span class="chip" onclick="quickAsk('How can I save money?')">How to save</span>
+          </div>
+          <div id="chat-box">
+            <div class="msg bot">
+              <div class="msg-avatar">G</div>
+              <div class="msg-bubble">Hi! I'm your Expense Guardian AI. Ask me about your spending, savings, or financial insights.</div>
+            </div>
+          </div>
+          <div class="chat-input-row">
+            <input type="text" id="msg-input" placeholder="Ask about your finances…" onkeydown="if(event.key==='Enter')sendMsg()"/>
+            <button class="btn-send" onclick="sendMsg()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div style="display:flex;flex-direction:column;gap:20px;">
+
+      <!-- QUICK TIPS -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+            </svg>
+          </div>
+          <span class="card-title">How It Works</span>
+        </div>
+        <div class="card-body">
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:14px;">
+            <li style="display:flex;gap:12px;align-items:flex-start;">
+              <span style="width:22px;height:22px;border-radius:50%;background:var(--accent-dim);border:1px solid var(--accent-border);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:var(--accent);flex-shrink:0;">1</span>
+              <div>
+                <div style="font-size:.88rem;font-weight:500;">Enter your expense</div>
+                <div style="font-size:.78rem;color:var(--text-2);margin-top:2px;">Amount and a short description is all you need</div>
+              </div>
+            </li>
+            <li style="display:flex;gap:12px;align-items:flex-start;">
+              <span style="width:22px;height:22px;border-radius:50%;background:var(--accent-dim);border:1px solid var(--accent-border);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:var(--accent);flex-shrink:0;">2</span>
+              <div>
+                <div style="font-size:.88rem;font-weight:500;">AI classifies &amp; scans</div>
+                <div style="font-size:.78rem;color:var(--text-2);margin-top:2px;">ML model auto-categorizes and flags anomalies</div>
+              </div>
+            </li>
+            <li style="display:flex;gap:12px;align-items:flex-start;">
+              <span style="width:22px;height:22px;border-radius:50%;background:var(--accent-dim);border:1px solid var(--accent-border);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:var(--accent);flex-shrink:0;">3</span>
+              <div>
+                <div style="font-size:.88rem;font-weight:500;">Review on Dashboard</div>
+                <div style="font-size:.78rem;color:var(--text-2);margin-top:2px;">Charts, predictions and your health score await</div>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- CTA CARD -->
+      <div class="card" style="background:linear-gradient(135deg,#0f1117 60%,rgba(0,229,160,0.07));border-color:var(--accent-border);">
+        <div class="card-body" style="text-align:center;padding:2rem 1.5rem;">
+          <div style="font-size:2rem;margin-bottom:.8rem;">📊</div>
+          <div style="font-family:var(--font-h);font-size:1rem;font-weight:700;margin-bottom:.5rem;">View Full Dashboard</div>
+          <div style="font-size:.82rem;color:var(--text-2);margin-bottom:1.2rem;line-height:1.6;">See charts, predictions, your financial health score, and all your records in one place.</div>
+          <a href="/dashboard" class="btn-primary" style="display:inline-block;text-decoration:none;">Open Dashboard →</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <footer>
+    &copy; 2025 Expense Guardian &mdash; AI-Powered Personal Finance
+  </footer>
+
+  <script>
+    // FORM SUBMIT
+    document.getElementById('exp-form').onsubmit = async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('btn-label');
+      const sp = document.getElementById('spinner');
+      btn.textContent = 'Processing…'; sp.style.display = 'block';
+
+      const fd = new FormData(e.target);
+      const r = await fetch('/add', { method: 'POST', body: fd });
+      const d = await r.json();
+
+      btn.textContent = 'Add Expense'; sp.style.display = 'none';
+
+      const res = document.getElementById('res');
+      const isWarn = d.alert.includes('Unusual');
+      res.className = 'show ' + (isWarn ? 'warn' : 'normal');
+      document.getElementById('res-cat').textContent = '⬡ ' + d.category;
+      document.getElementById('res-status').textContent = d.alert;
+      e.target.reset();
+    };
+
+    // CHAT
+    function addMsg(text, who) {
+      const box = document.getElementById('chat-box');
+      const d = document.createElement('div');
+      d.className = 'msg ' + who;
+      const init = who === 'user' ? 'U' : 'G';
+      d.innerHTML = `<div class="msg-avatar">${init}</div><div class="msg-bubble">${text}</div>`;
+      box.appendChild(d);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    async function sendMsg() {
+      const inp = document.getElementById('msg-input');
+      const m = inp.value.trim();
+      if (!m) return;
+      inp.value = '';
+      addMsg(m, 'user');
+      const r = await fetch('/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: m })
+      });
+      const d = await r.json();
+      addMsg(d.reply, 'bot');
+    }
+
+    function quickAsk(q) {
+      document.getElementById('msg-input').value = q;
+      sendMsg();
+    }
+  </script>
+</body>
+</html>
